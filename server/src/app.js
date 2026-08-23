@@ -3,6 +3,7 @@ const cors = require('cors');
 const helmet = require('helmet');
 const app = express();
 const authRoutes = require("./routes/authRoutes");
+const workflowRoutes = require("./routes/workflowRoutes");
 
 app.use(helmet());
 
@@ -23,5 +24,6 @@ app.get("/api/health", (req, res) => {
 })
 
 app.use("/api/auth", authRoutes);
+app.use("/api/workflows", workflowRoutes);
 
 module.exports = app;
