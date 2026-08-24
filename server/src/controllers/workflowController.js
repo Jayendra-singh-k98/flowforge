@@ -239,4 +239,69 @@ const deleteWorkflow = async (req, res) => {
   }
 };
 
-module.exports = { createWorkflow, getWorkflows, getWorkflowById, updateWorkflow, deleteWorkflow };
+const updateWorkflowStatus = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { status } = req.body;
+
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid workflow ID",
+      });
+    }
+
+    if (!status) {
+      return res.status(400).json({
+        success: false,
+        message: "Status is required",
+      });
+    }
+
+    const allowedStatuses = [
+      "draft",
+      "active",
+      "paused",
+    ];
+
+    if (!allowedStatuses.includes(status)) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid workflow status",
+      });
+    }
+
+    const workflow = await Workflow.findOne({
+      _id: id,
+      userId: req.user._id,
+    });
+
+    if (!workflow) {
+      return res.status(404).json({
+        success: false,
+        message: "Workflow not found",
+      });
+    }
+
+    workflow.status = status;
+
+    await workflow.save();
+
+    return res.status(200).json({
+      success: true,
+      message: "Workflow status updated successfully",
+      data: {
+        workflow,
+      },
+    });
+  } catch (error) {
+    console.error("Update workflow status error:", error);
+
+    return res.status(500).json({
+      success: false,
+      message: "Internal server error",
+    });
+  }
+};
+
+module.exports = { createWorkflow, getWorkflows, getWorkflowById, updateWorkflow, deleteWorkflow, updateWorkflowStatus, };
