@@ -24,3 +24,67 @@ body {
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
 }
+
+
+/* React Flow Controls - Flowforge */
+.react-flow__controls {
+    border: 1px solid #334155 !important;
+    border-radius: 8px !important;
+    overflow: hidden !important;
+    background: #0f172a !important;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.35) !important;
+}
+
+.react-flow__controls-button {
+    width: 36px !important;
+    height: 36px !important;
+
+    background: #0f172a !important;
+    border: none !important;
+    border-bottom: 1px solid #334155 !important;
+
+    color: #cbd5e1 !important;
+
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+}
+
+.react-flow__controls-button:last-child {
+    border-bottom: none !important;
+}
+
+.react-flow__controls-button:hover {
+    background: #1e293b !important;
+    color: #ffffff !important;
+}
+
+.react-flow__controls-button svg {
+    width: 16px !important;
+    height: 16px !important;
+
+    fill: none !important;
+    stroke: currentColor !important;
+}
+
+.react-flow__controls-button svg path {
+    stroke: currentColor !important;
+}
+
+/* React Flow MiniMap - Flowforge */
+
+.react-flow__minimap {
+    background: #0f172a !important;
+    border: 1px solid #334155 !important;
+    border-radius: 10px !important;
+    overflow: hidden !important;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.35) !important;
+}
+
+/* MiniMap viewport */
+.react-flow__minimap-mask {
+    fill: rgba(15, 23, 42, 0.65) !important;
+    stroke: #64748b !important;
+    stroke-width: 1.5 !important;
+}
+
