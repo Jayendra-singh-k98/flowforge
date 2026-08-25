@@ -29,7 +29,7 @@ export default function ConditionNode({ data }) {
         style={{ left: "30%" }}
       />
 
-      <Handle
+      <Handle 
         id="false"
         type="source"
         position={Position.Bottom}

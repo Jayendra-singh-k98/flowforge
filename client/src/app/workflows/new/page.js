@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback } from "react";
+import { useCallback, useState } from "react";
 
 import { ReactFlow, Background, Controls, MiniMap, addEdge, useNodesState, useEdgesState, } from "@xyflow/react";
 
@@ -11,6 +11,8 @@ import HttpNode from "@/components/workflow/HttpNode";
 import EmailNode from "@/components/workflow/EmailNode";
 import ConditionNode from "@/components/workflow/ConditionNode";
 import NodePalette from "@/components/workflow/NodePalette";
+import { createWorkflow, updateWorkflow, } from "@/lib/api";
+import { serializeNodes, serializeEdges, } from "@/lib/workflowSerializer";
 
 const nodeTypes = {
     trigger: TriggerNode,
@@ -36,11 +38,49 @@ const initialNodes = [
 const initialEdges = [];
 
 export default function NewWorkflowPage() {
-    const [nodes, setNodes, onNodesChange] =
-        useNodesState(initialNodes);
+    const [nodes, setNodes, onNodesChange] = useNodesState(initialNodes);
 
-    const [edges, setEdges, onEdgesChange] =
-        useEdgesState(initialEdges);
+    const [edges, setEdges, onEdgesChange] = useEdgesState(initialEdges);
+
+    const [workflowName, setWorkflowName] = useState("My Workflow");
+    const [workflowDescription, setWorkflowDescription] = useState("");
+    const [saving, setSaving] = useState(false);
+
+    const handleSaveWorkflow = async () => {
+        try {
+            const trimmedName = workflowName.trim();
+
+            if (!trimmedName) {
+                alert("Workflow name is required");
+                return;
+            }
+
+            setSaving(true);
+
+            const workflow = {
+                name: workflowName,
+                description: workflowDescription.trim(),
+                trigger: {
+                    type: "manual",
+                },
+                nodes: serializeNodes(nodes),
+                edges: serializeEdges(edges),
+                status: "draft",
+            };
+
+            const response = await createWorkflow(workflow);
+
+            console.log("Workflow saved:", response.data.workflow);
+
+            alert("Workflow saved successfully");
+        } catch (error) {
+            console.error("Save workflow error:", error);
+
+            alert(error.message);
+        } finally {
+            setSaving(false);
+        }
+    };
 
     const onConnect = useCallback(
         (connection) => {
@@ -89,8 +129,20 @@ export default function NewWorkflowPage() {
                     <span className="ml-2 text-slate-400">Workflow Builder</span>
                 </h1>
 
-                <button className="rounded-lg bg-white px-4 py-2 text-sm font-medium text-slate-900 shadow-s transition hover:bg-slate-200 active:scale-95">
-                    Save Workflow
+                <input
+                    value={workflowName}
+                    onChange={(e) =>
+                        setWorkflowName(e.target.value)
+                    }
+                    className="rounded-lg border px-3 py-2 text-sm"
+                    placeholder="Workflow name"
+                />
+
+                <button className="rounded-lg bg-white px-4 py-2 text-sm font-medium text-slate-900 shadow-s transition hover:bg-slate-200 active:scale-95"
+                    onClick={handleSaveWorkflow}
+                    disabled={saving}
+                >
+                    {saving ? "Saving..." : "Save Workflow"}
                 </button>
             </div>
 
@@ -107,6 +159,7 @@ export default function NewWorkflowPage() {
                         onNodesChange={onNodesChange}
                         onEdgesChange={onEdgesChange}
                         onConnect={onConnect}
+                         deleteKeyCode={["Backspace", "Delete"]}
                         fitView
                     >
                         <Background color="#334155" gap={20} size={1} />

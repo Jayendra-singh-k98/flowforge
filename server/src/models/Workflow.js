@@ -8,6 +8,11 @@ const workflowNodeSchema = new mongoose.Schema(
 
     name: { type: String, required: true, trim: true },
 
+    position: {
+      x: { type: Number, required: true, default: 0, },
+      y: { type: Number, required: true, default: 0, },
+    },
+
     config: { type: mongoose.Schema.Types.Mixed, default: {}, },
   },
   {
