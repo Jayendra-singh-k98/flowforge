@@ -25,8 +25,11 @@ const apiRequest = async (endpoint, options = {}) => {
 export const createWorkflow = (workflow) =>
   apiRequest("/workflows", {
     method: "POST",
-    body: JSON.stringify(workflow),
+    body: JSON.stringify(workflow),   
   });
+
+export const getWorkflows = () =>
+  apiRequest("/workflows");
 
 export const getWorkflow = (id) =>
   apiRequest(`/workflows/${id}`);
@@ -35,4 +38,9 @@ export const updateWorkflow = (id, workflow) =>
   apiRequest(`/workflows/${id}`, {
     method: "PATCH",
     body: JSON.stringify(workflow),
+  });
+
+export const deleteWorkflow = (id) =>
+  apiRequest(`/workflows/${id}`, {
+    method: "DELETE",
   });

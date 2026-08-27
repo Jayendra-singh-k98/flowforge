@@ -2,12 +2,7 @@ export const serializeNodes = (nodes) => {
   return nodes.map((node) => ({
     id: node.id,
 
-    type:
-      node.type === "trigger"
-        ? "trigger"
-        : node.type === "condition"
-        ? "condition"
-        : "action",
+    type: node.type === "trigger" ? "trigger" : node.type === "condition" ? "condition" : "action",
 
     name: node.data?.label || node.type,
 
@@ -17,7 +12,7 @@ export const serializeNodes = (nodes) => {
     },
 
     config: {
-      nodeType: node.type,
+      nodeType: node.type, ...(node.data?.config || {}),
     },
   }));
 };

@@ -1,4 +1,5 @@
 const Workflow = require("../models/Workflow");
+const { validateWorkflow, } = require("../services/workflowValidator");
 
 const createWorkflow = async (req, res) => {
   try {
@@ -52,7 +53,7 @@ const getWorkflows = async (req, res) => {
     }).sort({
       createdAt: -1,
     });
-    
+
 
     return res.status(200).json({
       success: true,
@@ -135,6 +136,22 @@ const updateWorkflow = async (req, res) => {
     }
 
     const { name, description, trigger, nodes, edges, status, } = req.body;
+
+    if (nodes !== undefined || edges !== undefined) {
+
+      const workflowNodes = nodes !== undefined ? nodes : workflow.nodes;
+      const workflowEdges = edges !== undefined ? edges : workflow.edges;
+
+      const validationErrors = validateWorkflow(workflowNodes, workflowEdges);
+
+      if (validationErrors.length > 0) {
+        return res.status(400).json({
+          success: false,
+          message: "Invalid workflow",
+          errors: validationErrors,
+        });
+      }
+    }
 
     if (name !== undefined) {
       if (
