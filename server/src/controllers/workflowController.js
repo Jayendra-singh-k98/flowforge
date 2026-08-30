@@ -3,7 +3,7 @@ const { validateWorkflow, } = require("../services/workflowValidator");
 
 const createWorkflow = async (req, res) => {
   try {
-    const { name, description, trigger, nodes, edges, } = req.body;
+    const { name, trigger, nodes, edges, } = req.body;
 
     if (!name) {
       return res.status(400).json({
@@ -21,7 +21,6 @@ const createWorkflow = async (req, res) => {
 
     const workflow = await Workflow.create({
       name,
-      description,
       userId: req.user._id,
       trigger,
       nodes: nodes || [],
@@ -135,7 +134,7 @@ const updateWorkflow = async (req, res) => {
       });
     }
 
-    const { name, description, trigger, nodes, edges, status, } = req.body;
+    const { name, trigger, nodes, edges, status, } = req.body;
 
     if (nodes !== undefined || edges !== undefined) {
 
@@ -164,10 +163,6 @@ const updateWorkflow = async (req, res) => {
       }
 
       workflow.name = name.trim();
-    }
-
-    if (description !== undefined) {
-      workflow.description = description;
     }
 
     if (trigger !== undefined) {

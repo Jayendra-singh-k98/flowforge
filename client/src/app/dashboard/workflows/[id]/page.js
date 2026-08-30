@@ -77,7 +77,7 @@ export default function WorkflowPage() {
         if (isNewWorkflow) {
             setNodes(initialNodes);
             setEdges([]);
-            setWorkflowName("My Workflow");
+            setWorkflowName("Select Workflow Name");
             setLoading(false);
 
             return;
@@ -117,10 +117,7 @@ export default function WorkflowPage() {
                 setEdges(flowEdges);
 
             } catch (error) {
-                console.error(
-                    "Load workflow error:",
-                    error
-                );
+                console.error( "Load workflow error:", error);
             } finally {
                 setLoading(false);
             }
@@ -292,8 +289,8 @@ export default function WorkflowPage() {
 
     return (
 
-        <div className="h-screen w-full">
-            <div className="flex h-16 items-center  justify-between border-b px-6 bg-slate-900">
+        <div className="flex flex-col h-screen w-full bg-slate-950 overflow-hidden">
+            <div className="flex h-16 items-center justify-between border-b px-6 bg-slate-900 shrink-0">
                 <h1 className="text-xl font-semibold">
                     {isNewWorkflow ? "Create Workflow" : "FlowForge Workflow"}
                 </h1>
@@ -317,12 +314,12 @@ export default function WorkflowPage() {
             </div>
 
 
-            <div className="flex h-[calc(100vh-4rem)]">
+            <div className="flex flex-1 overflow-hidden">
                 <NodePalette
                     onAddNode={addWorkflowNode}
                 />
 
-                <div className="relative flex-1 bg-slate-950">
+                <div className="relative flex-1 bg-slate-950 overflow-hidden">
                     <ReactFlow
                         nodes={nodes}
                         edges={edges}

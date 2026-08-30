@@ -3,7 +3,7 @@
 export default function NodeConfigPanel({ node, onUpdate, onClose, }) {
   if (!node) {
     return (
-      <aside className="w-80 border-l bg-slate-900 p-5">
+      <aside className="w-80 h-full border-l bg-slate-900 p-5 overflow-y-auto">
         <p className="text-sm text-gray-500">
           Select a node to configure it.
         </p>
@@ -14,7 +14,7 @@ export default function NodeConfigPanel({ node, onUpdate, onClose, }) {
   const config = node.data?.config || {};
 
   return (
-    <aside className="w-80 border-l bg-slate-900 p-5">
+    <aside className="w-80 h-full border-l bg-slate-900 p-5 overflow-y-auto">
       <div className="mb-6 flex items-center justify-between">
         <h2 className="text-lg font-semibold">
           {node.data?.label}
@@ -111,7 +111,7 @@ function HttpConfig({ config, onUpdate }) {
               body: e.target.value,
             })
           }
-          placeholder='{"message":"hello"}'
+          placeholder='write your request body here, e.g. {"key": "value"}'
           rows={5}
           className="w-full rounded-lg border border-slate-600 bg-slate-900 px-3 py-2 text-white outline-none focus:border-blue-500"
         />

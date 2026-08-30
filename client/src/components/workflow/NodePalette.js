@@ -21,7 +21,7 @@ const nodeOptions = [
 
 export default function NodePalette({ onAddNode }) {
     return (
-        <aside className="w-64 border-r border-slate-800 bg-slate-900 p-4">
+        <aside className="w-64 h-full border-r border-slate-800 bg-slate-900 p-4 overflow-y-auto">
             <h2 className="mb-5 text-xs font-semibold uppercase tracking-widest text-slate-400">
                 Nodes
             </h2>

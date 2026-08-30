@@ -37,8 +37,6 @@ const workflowSchema = new mongoose.Schema(
   {
     name: { type: String, required: true, trim: true, minlength: 1, maxlength: 100, },
 
-    description: { type: String, trim: true, maxlength: 500, default: "", },
-
     userId: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true, index: true, },
 
     status: { type: String, enum: ["draft", "active", "paused"], default: "draft" },

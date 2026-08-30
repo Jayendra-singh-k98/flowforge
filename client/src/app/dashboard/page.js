@@ -6,18 +6,6 @@ export default function DashboardPage() {
     return (
         <div className="min-h-screen bg-slate-950 text-white">
 
-            {/* Header */}
-            <header className="flex h-16 items-center justify-between border-b border-slate-800 px-6">
-                <h1 className="text-xl font-semibold">
-                    FlowForge
-                </h1>
-
-                <span className="text-sm text-slate-400">
-                    Dashboard
-                </span>
-            </header>
-
-
             {/* Main */}
             <main className="mx-auto max-w-7xl p-8">
 

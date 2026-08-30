@@ -17,20 +17,12 @@ export default function DashboardPage() {
         setError("");
 
         const response = await getWorkflows();
+        setWorkflows( response?.data?.workflows || []);
 
-        setWorkflows(
-          response?.data?.workflows || []
-        );
       } catch (error) {
-        console.error(
-          "Load workflows error:",
-          error
-        );
+        console.error( "Load workflows error:", error);
 
-        setError(
-          error.message ||
-          "Failed to load workflows."
-        );
+        setError( error.message ||  "Failed to load workflows.");
       } finally {
         setLoading(false);
       }
@@ -39,24 +31,20 @@ export default function DashboardPage() {
     loadWorkflows();
   }, []);
 
-  const handleDeleteWorkflow = async (
-    event,
-    workflowId
-  ) => {
+  const handleDeleteWorkflow = async ( event, workflowId ) => {
+
     event.preventDefault();
     event.stopPropagation();
 
-    const confirmed = window.confirm(
-      "Are you sure you want to delete this workflow?"
-    );
+    const confirmed = window.confirm( "Are you sure you want to delete this workflow?");
 
     if (!confirmed) {
       return;
     }
 
     try {
+    
       setDeletingId(workflowId);
-
       await deleteWorkflow(workflowId);
 
       setWorkflows((currentWorkflows) =>
@@ -66,15 +54,8 @@ export default function DashboardPage() {
         )
       );
     } catch (error) {
-      console.error(
-        "Delete workflow error:",
-        error
-      );
-
-      alert(
-        error.message ||
-        "Failed to delete workflow."
-      );
+      console.error( "Delete workflow error:", error);
+      alert( error.message || "Failed to delete workflow.");
     } finally {
       setDeletingId(null);
     }
@@ -82,16 +63,6 @@ export default function DashboardPage() {
 
   return (
     <div className="min-h-screen bg-slate-950 text-white">
-      {/* Header */}
-      <header className="flex h-16 items-center justify-between border-b border-slate-800 px-6">
-        <h1 className="text-xl font-semibold">
-          FlowForge
-        </h1>
-
-        <div className="text-sm text-slate-400">
-          Dashboard
-        </div>
-      </header>
 
       {/* Main */}
       <main className="mx-auto max-w-7xl p-8">
@@ -143,9 +114,7 @@ export default function DashboardPage() {
               </p>
 
               <button
-                onClick={() =>
-                  window.location.reload()
-                }
+                onClick={() => window.location.reload() }
                 className="mt-4 rounded-lg bg-red-600 px-4 py-2 text-sm hover:bg-red-700"
               >
                 Try Again
@@ -190,16 +159,10 @@ export default function DashboardPage() {
                     <WorkflowCard
                       name={workflow.name}
                       status={workflow.status}
-                      description={workflow.description}
                       onDelete={(event) =>
-                        handleDeleteWorkflow(
-                          event,
-                          workflow._id
-                        )
+                        handleDeleteWorkflow( event, workflow._id)
                       }
-                      deleting={
-                        deletingId === workflow._id
-                      }
+                      deleting={deletingId === workflow._id}
                     />
                   </Link>
                 ))}
@@ -211,7 +174,7 @@ export default function DashboardPage() {
   );
 }
 
-function WorkflowCard({ name, status, description, onDelete, deleting, }) {
+function WorkflowCard({ name, status, onDelete, deleting, }) {
   return (
     <div className="rounded-xl border border-slate-800 bg-slate-900 p-5 transition hover:-translate-y-1 hover:border-slate-600 hover:bg-slate-800">
       <div className="mb-4 flex items-start justify-between gap-4">
@@ -219,11 +182,6 @@ function WorkflowCard({ name, status, description, onDelete, deleting, }) {
           <h4 className="truncate font-semibold">
             {name}
           </h4>
-
-          <p className="mt-1 line-clamp-2 text-sm text-slate-400">
-            {description ||
-              "No description provided."}
-          </p>
         </div>
 
         <span

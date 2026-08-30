@@ -205,28 +205,14 @@ const googleCallback = async (req, res) => {
 
     const token = generateToken(user._id.toString());
 
-    return res.status(200).json({
-      success: true,
-      message: "Google login successful",
-      data: {
-        user: {
-          id: user._id,
-          name: user.name,
-          email: user.email,
-          avatar: user.avatar,
-          authProvider: user.authProvider,
-        },
-        token,
-      },
-    });
+    return res.redirect(
+      `${process.env.FRONTEND_URL}/oauth-success?token=${token}`
+    );
+
   } catch (error) {
     console.error("Google OAuth error:", error);
-
-    return res.status(500).json({
-      success: false,
-      message: "Google authentication failed",
-    });
+    return res.redirect(`${process.env.FRONTEND_URL}/login?error=google_auth_failed`);
   }
 };
 
-module.exports = {register, login, googleLogin, googleCallback};
+module.exports = { register, login, googleLogin, googleCallback };

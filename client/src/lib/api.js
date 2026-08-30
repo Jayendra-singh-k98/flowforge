@@ -7,7 +7,9 @@ const apiRequest = async (endpoint, options = {}) => {
   const response = await fetch(`${API_URL}${endpoint}`, {
     ...options,
     headers: {
-      "Content-Type": "application/json", ...(token ? { Authorization: `Bearer ${token}`, } : {}), ...(options.headers || {}),
+      "Content-Type": "application/json", 
+      ...(token ? { Authorization: `Bearer ${token}`, } : {}), 
+      ...(options.headers || {}),
     },
   });
 
@@ -44,3 +46,23 @@ export const deleteWorkflow = (id) =>
   apiRequest(`/workflows/${id}`, {
     method: "DELETE",
   });
+
+
+export const loginUser = (credentials) =>
+  apiRequest("/auth/login", {
+    method: "POST",
+    body: JSON.stringify(credentials),
+  });
+ 
+ 
+export const registerUser = (userData) =>
+  apiRequest("/auth/register", {
+    method: "POST",
+    body: JSON.stringify(userData),
+  });
+ 
+
+export const getMe = () => apiRequest("/auth/me");
+
+export const googleAuthUrl = () => `${API_URL}/auth/google`;
+ 
