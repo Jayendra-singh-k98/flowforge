@@ -4,7 +4,6 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useAuth } from "../context/AuthContext";
 import GoogleButton from "@/components/buttons/GoogleButton";
-import FlowMark from "@/components/buttons/FlowMark";
 
 export default function Register() {
   const { register } = useAuth();
@@ -41,7 +40,6 @@ export default function Register() {
     <div className="flex min-h-[calc(100vh-57px)] items-center justify-center bg-slate-900 px-6 ">
       <div className="w-full max-w-sm">
         <div className="mb-8 flex flex-col items-center gap-3">
-          <FlowMark size={36} />
           <h1 className="font-display text-2xl font-semibold text-slate-100">
             Create your account
           </h1>
