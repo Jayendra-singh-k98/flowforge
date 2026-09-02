@@ -49,6 +49,7 @@ export default function WorkflowPage() {
 
     const onConnect = useCallback(
         (connection) => {
+            console.log("CONNECTION:", connection);
             setEdges((currentEdges) =>
                 addEdge(connection, currentEdges)
             );
@@ -110,14 +111,16 @@ export default function WorkflowPage() {
                 const flowEdges = workflow.edges.map((edge) => ({
                     id: edge.id,
                     source: edge.source,
+                    sourceHandle: edge.sourceHandle ?? null,
                     target: edge.target,
+                    targetHandle: edge.targetHandle ?? null,
                 }));
 
                 setNodes(flowNodes);
                 setEdges(flowEdges);
 
             } catch (error) {
-                console.error( "Load workflow error:", error);
+                console.error("Load workflow error:", error);
             } finally {
                 setLoading(false);
             }
@@ -281,18 +284,17 @@ export default function WorkflowPage() {
 
     if (loading) {
         return (
-            <div className="flex h-screen items-center justify-center">
+            <div className="flex h-[calc(100vh-4rem)] items-center justify-center bg-slate-950 text-slate-400">
                 Loading workflow...
             </div>
         );
     }
 
     return (
-
-        <div className="flex flex-col h-screen w-full bg-slate-950 overflow-hidden">
-            <div className="flex h-16 items-center justify-between border-b px-6 bg-slate-900 shrink-0">
-                <h1 className="text-xl font-semibold">
-                    {isNewWorkflow ? "Create Workflow" : "FlowForge Workflow"}
+        <div className="flex flex-col h-[calc(100vh-4rem)] w-full bg-slate-950 overflow-hidden">
+            <div className="flex h-16 items-center justify-between gap-4 border-b border-slate-800 bg-slate-900 px-6 shrink-0">
+                <h1 className="text-lg font-semibold text-white whitespace-nowrap">
+                    {isNewWorkflow ? "Create Workflow" : "Workflow"}
                 </h1>
 
                 <input
@@ -300,14 +302,14 @@ export default function WorkflowPage() {
                     onChange={(e) =>
                         setWorkflowName(e.target.value)
                     }
-                    className="rounded-lg border px-3 py-2"
+                    className="w-full max-w-md rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-white outline-none placeholder:text-slate-500 focus:border-blue-500"
                     placeholder="Workflow name"
                 />
 
                 <button
                     onClick={handleSaveWorkflow}
                     disabled={saving}
-                    className="rounded-lg bg-black px-4 py-2 text-sm text-white disabled:opacity-50"
+                    className="shrink-0 rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50"
                 >
                     {saving ? "Saving..." : isNewWorkflow ? "Create Workflow" : "Save Changes"}
                 </button>

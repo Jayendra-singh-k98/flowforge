@@ -17,12 +17,12 @@ export default function DashboardPage() {
         setError("");
 
         const response = await getWorkflows();
-        setWorkflows( response?.data?.workflows || []);
+        setWorkflows(response?.data?.workflows || []);
 
       } catch (error) {
-        console.error( "Load workflows error:", error);
+        console.error("Load workflows error:", error);
 
-        setError( error.message ||  "Failed to load workflows.");
+        setError(error.message || "Failed to load workflows.");
       } finally {
         setLoading(false);
       }
@@ -31,19 +31,19 @@ export default function DashboardPage() {
     loadWorkflows();
   }, []);
 
-  const handleDeleteWorkflow = async ( event, workflowId ) => {
+  const handleDeleteWorkflow = async (event, workflowId) => {
 
     event.preventDefault();
     event.stopPropagation();
 
-    const confirmed = window.confirm( "Are you sure you want to delete this workflow?");
+    const confirmed = window.confirm("Are you sure you want to delete this workflow?");
 
     if (!confirmed) {
       return;
     }
 
     try {
-    
+
       setDeletingId(workflowId);
       await deleteWorkflow(workflowId);
 
@@ -54,8 +54,8 @@ export default function DashboardPage() {
         )
       );
     } catch (error) {
-      console.error( "Delete workflow error:", error);
-      alert( error.message || "Failed to delete workflow.");
+      console.error("Delete workflow error:", error);
+      alert(error.message || "Failed to delete workflow.");
     } finally {
       setDeletingId(null);
     }
@@ -114,7 +114,7 @@ export default function DashboardPage() {
               </p>
 
               <button
-                onClick={() => window.location.reload() }
+                onClick={() => window.location.reload()}
                 className="mt-4 rounded-lg bg-red-600 px-4 py-2 text-sm hover:bg-red-700"
               >
                 Try Again
@@ -151,20 +151,16 @@ export default function DashboardPage() {
             workflows.length > 0 && (
               <div className="grid gap-5 md:grid-cols-2 lg:grid-cols-3">
                 {workflows.map((workflow) => (
-                  <Link
+                  <WorkflowCard
                     key={workflow._id}
-                    href={`/dashboard/workflows/${workflow._id}`}
-                    className="block"
-                  >
-                    <WorkflowCard
-                      name={workflow.name}
-                      status={workflow.status}
-                      onDelete={(event) =>
-                        handleDeleteWorkflow( event, workflow._id)
-                      }
-                      deleting={deletingId === workflow._id}
-                    />
-                  </Link>
+                    name={workflow.name}
+                    status={workflow.status}
+                    workflowId={workflow._id}
+                    onDelete={(event) =>
+                      handleDeleteWorkflow(event, workflow._id)
+                    }
+                    deleting={deletingId === workflow._id}
+                  />
                 ))}
               </div>
             )}
@@ -174,9 +170,10 @@ export default function DashboardPage() {
   );
 }
 
-function WorkflowCard({ name, status, onDelete, deleting, }) {
+function WorkflowCard({ name, status, workflowId, onDelete, deleting,}) {
   return (
     <div className="rounded-xl border border-slate-800 bg-slate-900 p-5 transition hover:-translate-y-1 hover:border-slate-600 hover:bg-slate-800">
+
       <div className="mb-4 flex items-start justify-between gap-4">
         <div className="min-w-0">
           <h4 className="truncate font-semibold">
@@ -185,20 +182,23 @@ function WorkflowCard({ name, status, onDelete, deleting, }) {
         </div>
 
         <span
-          className={`shrink-0 rounded-full px-3 py-1 text-xs ${
-            status?.toLowerCase() === "active"
+          className={`shrink-0 rounded-full px-3 py-1 text-xs ${status?.toLowerCase() === "active"
               ? "bg-green-500/10 text-green-400"
               : "bg-slate-800 text-slate-400"
-          }`}
+            }`}
         >
           {status}
         </span>
       </div>
 
       <div className="flex items-center justify-between">
-        <span className="text-sm text-blue-400">
+
+        <Link
+          href={`/dashboard/workflows/${workflowId}`}
+          className="text-sm text-blue-400 hover:text-blue-300"
+        >
           Open Workflow →
-        </span>
+        </Link>
 
         <button
           onClick={onDelete}
@@ -207,7 +207,9 @@ function WorkflowCard({ name, status, onDelete, deleting, }) {
         >
           {deleting ? "Deleting..." : "Delete"}
         </button>
+
       </div>
+
     </div>
   );
 }

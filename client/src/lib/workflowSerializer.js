@@ -21,6 +21,8 @@ export const serializeEdges = (edges) => {
   return edges.map((edge) => ({
     id: edge.id,
     source: edge.source,
+    sourceHandle: edge.sourceHandle ?? null,
     target: edge.target,
+    targetHandle: edge.targetHandle ?? null,
   }));
 };

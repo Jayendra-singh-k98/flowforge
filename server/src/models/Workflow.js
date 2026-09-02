@@ -2,9 +2,9 @@ const mongoose = require("mongoose");
 
 const workflowNodeSchema = new mongoose.Schema(
   {
-    id: { type: String, required: true},
+    id: { type: String, required: true },
 
-    type: { type: String, required: true, enum: [ "trigger", "action", "condition", ], },
+    type: { type: String, required: true, enum: ["trigger", "action", "condition",], },
 
     name: { type: String, required: true, trim: true },
 
@@ -26,7 +26,11 @@ const workflowEdgeSchema = new mongoose.Schema(
 
     source: { type: String, required: true, },
 
-    target: { type: String, required: true, },
+    sourceHandle: { type: String, default: null,},
+
+    target: { type: String, required: true,},
+
+    targetHandle: {type: String, default: null,},
   },
   {
     _id: false,
@@ -41,9 +45,10 @@ const workflowSchema = new mongoose.Schema(
 
     status: { type: String, enum: ["draft", "active", "paused"], default: "draft" },
 
-    trigger: { type: { type: String, enum: [ "manual", "webhook", "schedule", ], required: true, },
-                config: { type: mongoose.Schema.Types.Mixed, default: {}, },
-            },
+    trigger: {
+      type: { type: String, enum: ["manual", "webhook", "schedule",], required: true, },
+      config: { type: mongoose.Schema.Types.Mixed, default: {}, },
+    },
 
     nodes: { type: [workflowNodeSchema], default: [], },
 
@@ -56,4 +61,4 @@ const workflowSchema = new mongoose.Schema(
 
 workflowSchema.index({ userId: 1, createdAt: -1, });
 
-module.exports = mongoose.model( "Workflow", workflowSchema );
+module.exports = mongoose.model("Workflow", workflowSchema);
