@@ -32,9 +32,17 @@ const executeHttp = async (node, input) => {
     }, 10000);
 
     try {
-        // const headers = {...(config.headers || {}),};
 
         let body;
+        const headers = { ...(config.headers || {}) };
+
+        if (!["GET", "HEAD"].includes(method) && config.body) {
+            body = config.body;
+
+            if (!headers["Content-Type"]) {
+                headers["Content-Type"] = "application/json";
+            }
+        }
 
         // GET and HEAD requests normally don't contain a body
         if (!["GET", "HEAD"].includes(method) && config.body) {
@@ -45,6 +53,7 @@ const executeHttp = async (node, input) => {
 
         const response = await fetch(url, {
             method,
+            headers,
             body,
             signal: controller.signal,
         });
@@ -121,20 +130,63 @@ const executeCondition = async (node, input) => {
             break;
 
         case "contains":
-            result = String(actualValue).includes( String(expectedValue) );
+            result = String(actualValue).includes(String(expectedValue));
             break;
 
         default:
-            throw new Error( `Unsupported condition operator: ${operator}` );
+            throw new Error(`Unsupported condition operator: ${operator}`);
     }
 
     return { result, field, actualValue, expectedValue, operator, };
 };
 
-const executeEmail = async (node, input) => {
-    throw new Error("Email node executor is not implemented yet");
-};
 
+const nodemailer = require("nodemailer");
+
+const emailTransporter = nodemailer.createTransport({
+    host: process.env.SMTP_HOST,
+    port: Number(process.env.SMTP_PORT || 587),
+    secure: Number(process.env.SMTP_PORT) === 465,
+    auth: {
+        user: process.env.SMTP_USER,
+        pass: process.env.SMTP_PASS,
+    },
+});
+
+const executeEmail = async (node, input) => {
+    const config = node.config || {};
+
+    const to = config.to;
+    const subject = config.subject;
+    const body = config.body;
+
+    if (!to) {
+        throw new Error("Email recipient is required");
+    }
+
+    if (!subject) {
+        throw new Error("Email subject is required");
+    }
+
+    if (!body) {
+        throw new Error("Email body is required");
+    }
+
+    const mailOptions = {
+        from: process.env.SMTP_FROM || process.env.SMTP_USER,
+        to,
+        subject,
+        text: body,
+    };
+
+    const info = await emailTransporter.sendMail(mailOptions);
+
+    return {
+        messageId: info.messageId,
+        accepted: info.accepted,
+        rejected: info.rejected,
+    };
+};
 const executeNode = async (node, input = {}) => {
 
     const nodeType = node.config?.nodeType || node.type;

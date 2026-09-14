@@ -21,7 +21,7 @@ const executeWorkflow = async (req, res) => {
         const execution = await WorkflowExecution.create({
             workflowId: workflow._id,
             userId: req.user._id,
-            status: "pending",
+            status: "queued",
             nodeExecutions: [],
         });
 
@@ -42,7 +42,7 @@ const executeWorkflow = async (req, res) => {
             },
         });
 
-        execution.status = "queued";    
+        execution.status = "queued";
         await execution.save();
 
     } catch (error) {
@@ -72,16 +72,11 @@ const getWorkflowExecution = async (req, res) => {
 
         return res.status(200).json({
             success: true,
-            data: {
-                execution,
-            },
+            data: { execution, },
         });
 
     } catch (error) {
-        console.error(
-            "Get workflow execution error:",
-            error
-        );
+        console.error("Get workflow execution error:", error);
 
         if (error.name === "CastError") {
             return res.status(400).json({
@@ -97,4 +92,42 @@ const getWorkflowExecution = async (req, res) => {
     }
 };
 
-module.exports = { executeWorkflow, getWorkflowExecution, };
+const getWorkflowExecutions = async (req, res) => {
+    try {
+        const workflowId = req.params.id;
+
+        // Make sure the workflow belongs to the logged-in user
+        const workflow = await Workflow.findOne({
+            _id: workflowId,
+            userId: req.user._id,
+        });
+
+        if (!workflow) {
+            return res.status(404).json({ success: false, message: "Workflow not found" });
+        }
+
+        const executions = await WorkflowExecution.find({
+            workflowId: workflow._id,
+            userId: req.user._id,
+        }).sort({ createdAt: -1 }).lean();
+
+        return res.status(200).json({ success: true, data: { executions, },});
+
+    } catch (error) {
+        console.error( "Get workflow executions error:", error);
+
+        if (error.name === "CastError") {
+            return res.status(400).json({
+                success: false,
+                message: "Invalid workflow ID",
+            });
+        }
+
+        return res.status(500).json({
+            success: false,
+            message: "Failed to get workflow executions",
+        });
+    }
+};
+
+module.exports = { executeWorkflow, getWorkflowExecution, getWorkflowExecutions };
