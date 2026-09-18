@@ -42,8 +42,6 @@ const executeWorkflow = async (req, res) => {
             },
         });
 
-        execution.status = "queued";
-        await execution.save();
 
     } catch (error) {
         console.error("Execute workflow error:", error);

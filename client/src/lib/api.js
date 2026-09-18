@@ -65,4 +65,13 @@ export const registerUser = (userData) =>
 export const getMe = () => apiRequest("/auth/me");
 
 export const googleAuthUrl = () => `${API_URL}/auth/google`;
+
+export const getWorkflowExecutions = (workflowId) => {
+  apiRequest(`/workflows/${workflowId}/executions`);
+}
  
+export const getWorkflowExecution = (executionId) => {
+  apiRequest(`/workflow-executions/${executionId}`);
+};
+
+

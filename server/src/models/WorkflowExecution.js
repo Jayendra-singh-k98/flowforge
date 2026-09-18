@@ -40,6 +40,7 @@ const workflowExecutionSchema = new mongoose.Schema(
             ],
             default: "pending",
         },
+        retryCount: { type: Number, default: 0,},
         startedAt: { type: Date, default: null,},
         completedAt: { type: Date, default: null,},
         nodeExecutions: { type: [nodeExecutionSchema], default: [],},

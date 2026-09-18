@@ -1,14 +1,10 @@
 "use client";
-
 import { useEffect, useCallback, useState } from "react";
-
 import { ReactFlow, Background, Controls, MiniMap, useNodesState, useEdgesState, addEdge, } from "@xyflow/react";
-
 import "@xyflow/react/dist/style.css";
-
 import { useParams } from "next/navigation";
-
 import { getWorkflow, updateWorkflow } from "@/lib/api";
+import Link from "next/link";
 
 import TriggerNode from "@/components/workflow/TriggerNode";
 import HttpNode from "@/components/workflow/HttpNode";
@@ -32,6 +28,7 @@ export default function WorkflowPage() {
     const params = useParams();
 
     const isNewWorkflow = params.id === "new";
+    const workflowId = params.id;
 
     const [nodes, setNodes, reactFlowOnNodesChange,] = useNodesState([]);
     const [edges, setEdges, onEdgesChange] = useEdgesState([]);
@@ -306,13 +303,34 @@ export default function WorkflowPage() {
                     placeholder="Workflow name"
                 />
 
-                <button
-                    onClick={handleSaveWorkflow}
-                    disabled={saving}
-                    className="shrink-0 rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50"
-                >
-                    {saving ? "Saving..." : isNewWorkflow ? "Create Workflow" : "Save Changes"}
-                </button>
+                <div className="flex items-center gap-3 shrink-0">
+
+
+                    {!isNewWorkflow && (
+                        <Link
+                            href={`/dashboard/workflows/${workflowId}/executions`}
+                            className="rounded-lg border border-slate-700 bg-slate-800 px-4 py-2 text-sm font-medium text-white transition hover:bg-slate-700"
+                        >
+                            Executions
+                        </Link>
+                    )}
+                    {!isNewWorkflow && (
+                        <Link
+                            href={`/dashboard/workflows/${workflowId}/executions`}
+                            className="rounded-lg border border-slate-700 px-4 py-2 text-sm text-slate-300 hover:bg-slate-800"
+                        >
+                            Execution History
+                        </Link>
+                    )}
+
+                    <button
+                        onClick={handleSaveWorkflow}
+                        disabled={saving}
+                        className="rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50"
+                    >
+                        {saving ? "Saving..." : isNewWorkflow ? "Create Workflow" : "Save Changes"}
+                    </button>
+                </div>
             </div>
 
 

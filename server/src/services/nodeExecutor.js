@@ -44,11 +44,6 @@ const executeHttp = async (node, input) => {
             }
         }
 
-        // GET and HEAD requests normally don't contain a body
-        if (!["GET", "HEAD"].includes(method) && config.body) {
-            body = config.body;
-        }
-
         console.log(`HTTP ${method} ${url}`);
 
         const response = await fetch(url, {
