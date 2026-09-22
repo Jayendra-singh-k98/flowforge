@@ -38,9 +38,6 @@ export default function ExecutionDetailsPage() {
         }
 
         const response = await getWorkflowExecution(executionId);
-
-        console.log("Execution details response:", response);
-        
         const loaded = response?.data?.execution || null;
         if (cancelled) return;
 
@@ -49,7 +46,6 @@ export default function ExecutionDetailsPage() {
       } catch (error) {
         console.error("Load execution error:", error);
         if (!isPoll) setError(error?.message || "Failed to load execution.");
-        // poll errors are swallowed silently so a transient blip doesn't flip the page into an error state
       } finally {
         if (!isPoll) setLoading(false);
       }
@@ -64,7 +60,10 @@ export default function ExecutionDetailsPage() {
     };
   }, [executionId]);
 
-  const getStatusClass = (status) => {
+  const formatDate = (date) => (date ? new Date(date).toLocaleString() : "—");
+  const isLive = execution && !TERMINAL_STATUSES.includes(execution.status);
+
+  const getStatusPillClass = (status) => {
     switch (status) {
       case "completed": return "bg-green-500/10 text-green-400";
       case "running": return "bg-blue-500/10 text-blue-400";
@@ -74,16 +73,13 @@ export default function ExecutionDetailsPage() {
     }
   };
 
-  const formatDate = (date) => (date ? new Date(date).toLocaleString() : "—");
-  const isLive = execution && !TERMINAL_STATUSES.includes(execution.status);
-
   return (
     <div className="min-h-screen bg-slate-950 text-white">
-      <main className="mx-auto max-w-7xl p-8">
+      <main className="mx-auto max-w-4xl p-8">
         <div className="mb-8 flex items-center justify-between">
           <div>
             <h1 className="text-3xl font-bold">Execution Details</h1>
-            <p className="mt-2 text-slate-400">View the result of this workflow execution.</p>
+            <p className="mt-2 text-slate-400">Watch this workflow run, step by step.</p>
           </div>
           <Link
             href={`/dashboard/workflows/${workflowId}/executions`}
@@ -107,71 +103,45 @@ export default function ExecutionDetailsPage() {
 
         {!loading && !error && execution && (
           <>
-            <section className="mb-6 rounded-xl border border-slate-800 bg-slate-900 p-6">
+            {/* Summary */}
+            <section className="mb-10 rounded-xl border border-slate-800 bg-slate-900 p-6">
               <div className="mb-6 flex items-center justify-between">
                 <div>
                   <h2 className="text-xl font-semibold">Execution #{execution._id?.slice(-6)}</h2>
-                  <p className="mt-1 text-sm text-slate-400">Created {formatDate(execution.createdAt)}</p>
+                  <p className="mt-1 text-sm text-slate-400">Started {formatDate(execution.startedAt)}</p>
                 </div>
 
                 <div className="flex items-center gap-3">
                   {isLive && (
                     <span className="flex items-center gap-1.5 text-xs text-slate-500">
                       <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-blue-400" />
-                      Auto-refreshing
+                      Live
                     </span>
                   )}
-                  <span className={`rounded-full px-4 py-2 text-sm font-medium ${getStatusClass(execution.status)}`}>
+                  <span className={`rounded-full px-4 py-2 text-sm font-medium ${getStatusPillClass(execution.status)}`}>
                     {execution.status}
                   </span>
                 </div>
               </div>
 
-              <div className="grid gap-4 md:grid-cols-3">
-                <div className="rounded-lg bg-slate-800/60 p-4">
-                  <p className="text-xs text-slate-500">Started</p>
-                  <p className="mt-1 text-sm text-slate-300">{formatDate(execution.startedAt)}</p>
-                </div>
-                <div className="rounded-lg bg-slate-800/60 p-4">
-                  <p className="text-xs text-slate-500">Completed</p>
-                  <p className="mt-1 text-sm text-slate-300">{formatDate(execution.completedAt)}</p>
-                </div>
-                <div className="rounded-lg bg-slate-800/60 p-4">
-                  <p className="text-xs text-slate-500">Nodes Executed</p>
-                  <p className="mt-1 text-sm text-slate-300">{execution.nodeExecutions?.length || 0}</p>
-                </div>
-              </div>
-
               {execution.error && (
-                <div className="mt-5 rounded-lg border border-red-900 bg-red-950/30 p-4">
+                <div className="rounded-lg border border-red-900 bg-red-950/30 p-4">
                   <p className="text-sm font-medium text-red-400">Execution Error</p>
                   <p className="mt-1 text-sm text-red-300">{execution.error}</p>
                 </div>
               )}
             </section>
 
+            {/* Timeline */}
             <section>
-              <div className="mb-4">
-                <h2 className="text-xl font-semibold">Node Executions</h2>
-                <p className="mt-1 text-sm text-slate-400">Execution result for each workflow node.</p>
-              </div>
+              <h2 className="mb-6 text-xl font-semibold">Run Timeline</h2>
 
               {execution.nodeExecutions?.length === 0 ? (
                 <div className="rounded-xl border border-dashed border-slate-700 bg-slate-900/50 p-8 text-center text-slate-400">
-                  No node executions recorded.
+                  No steps recorded yet.
                 </div>
               ) : (
-                <div className="space-y-4">
-                  {execution.nodeExecutions.map((nodeExecution, index) => (
-                    <NodeExecutionCard
-                      key={nodeExecution.nodeId || index}
-                      nodeExecution={nodeExecution}
-                      index={index}
-                      getStatusClass={getStatusClass}
-                      formatDate={formatDate}
-                    />
-                  ))}
-                </div>
+                <NodeTimeline nodeExecutions={execution.nodeExecutions} formatDate={formatDate} />
               )}
             </section>
           </>
@@ -181,53 +151,104 @@ export default function ExecutionDetailsPage() {
   );
 }
 
-function NodeExecutionCard({ nodeExecution, index, getStatusClass, formatDate }) {
+function NodeTimeline({ nodeExecutions, formatDate }) {
   return (
-    <div className="rounded-xl border border-slate-800 bg-slate-900 p-5">
-      <div className="flex items-center justify-between gap-4">
-        <div>
-          <h3 className="font-semibold">Node {index + 1}</h3>
-          <p className="mt-1 text-xs text-slate-500">{nodeExecution.nodeId}</p>
-          <p className="mt-1 text-sm text-slate-400">Type: {nodeExecution.nodeType}</p>
-        </div>
-        <span className={`rounded-full px-3 py-1 text-xs font-medium ${getStatusClass(nodeExecution.status)}`}>
-          {nodeExecution.status}
-        </span>
-      </div>
+    <div className="relative">
+      {nodeExecutions.map((nodeExecution, index) => (
+        <TimelineStep
+          key={nodeExecution.nodeId || index}
+          nodeExecution={nodeExecution}
+          index={index}
+          isLast={index === nodeExecutions.length - 1}
+          formatDate={formatDate}
+        />
+      ))}
+    </div>
+  );
+}
 
-      <div className="mt-5 grid gap-4 md:grid-cols-2">
-        <div>
-          <p className="mb-2 text-xs font-medium text-slate-500">Started</p>
-          <p className="text-sm text-slate-300">{formatDate(nodeExecution.startedAt)}</p>
-        </div>
-        <div>
-          <p className="mb-2 text-xs font-medium text-slate-500">Completed</p>
-          <p className="text-sm text-slate-300">{formatDate(nodeExecution.completedAt)}</p>
-        </div>
-      </div>
+function TimelineStep({ nodeExecution, index, isLast, formatDate }) {
+  const [expanded, setExpanded] = useState(false);
+  const status = nodeExecution.status;
+  const isRunning = status === "running";
+  const isCompleted = status === "completed";
+  const isFailed = status === "failed";
 
-      <div className="mt-5">
-        <p className="mb-2 text-xs font-medium text-slate-500">Input</p>
-        <pre className="overflow-x-auto rounded-lg bg-slate-950 p-4 text-xs text-slate-300">
-          {JSON.stringify(nodeExecution.input || {}, null, 2)}
-        </pre>
-      </div>
+  const dotStyles = isCompleted
+    ? "border-green-500 bg-green-500/20 text-green-400"
+    : isFailed
+    ? "border-red-500 bg-red-500/20 text-red-400"
+    : isRunning
+    ? "border-blue-500 bg-blue-500/20 text-blue-400"
+    : "border-slate-700 bg-slate-800 text-slate-500";
 
-      <div className="mt-5">
-        <p className="mb-2 text-xs font-medium text-slate-500">Output</p>
-        <pre className="overflow-x-auto rounded-lg bg-slate-950 p-4 text-xs text-slate-300">
-          {JSON.stringify(nodeExecution.output || {}, null, 2)}
-        </pre>
-      </div>
+  const connectorStyles = isCompleted || isFailed ? "bg-green-500/50" : "bg-slate-700";
 
-      {nodeExecution.error && (
-        <div className="mt-5 rounded-lg border border-red-900 bg-red-950/30 p-4">
-          <p className="text-xs font-medium text-red-400">Error</p>
-          <p className="mt-1 text-sm text-red-300">{nodeExecution.error}</p>
-        </div>
+  return (
+    <div className="relative flex gap-3 pb-1">
+      {!isLast && (
+        <div className={`absolute left-3 top-7 h-[calc(100%-1.5rem)] w-px ${connectorStyles}`} />
       )}
 
-      <div className="mt-4 text-xs text-slate-500">Retry count: {nodeExecution.retryCount || 0}</div>
+      <div className={`relative z-10 flex h-6 w-6 shrink-0 items-center justify-center rounded-full border-2 bg-slate-950 ${dotStyles}`}>
+        {isCompleted && (
+          <svg className="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
+            <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+          </svg>
+        )}
+        {isFailed && (
+          <svg className="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
+            <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+          </svg>
+        )}
+        {isRunning && <span className="h-1.5 w-1.5 animate-ping rounded-full bg-blue-400" />}
+        {!isCompleted && !isFailed && !isRunning && <span className="h-1 w-1 rounded-full bg-slate-600" />}
+      </div>
+
+      <div className="min-w-0 flex-1 pb-3">
+        <button
+          onClick={() => setExpanded((e) => !e)}
+          className="flex w-full items-center gap-2 rounded-lg px-2 py-1 text-left text-sm hover:bg-slate-900"
+        >
+          <span className="text-xs text-slate-600">{index + 1}.</span>
+          <span className="truncate font-medium text-white">{nodeExecution.nodeType}</span>
+          {isRunning && <span className="text-xs text-blue-400">running…</span>}
+          <span className="ml-auto shrink-0 text-xs text-slate-500">
+            {formatDate(nodeExecution.completedAt || nodeExecution.startedAt)}
+          </span>
+          <svg
+            className={`h-3 w-3 shrink-0 text-slate-500 transition-transform ${expanded ? "rotate-180" : ""}`}
+            fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}
+          >
+            <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+          </svg>
+        </button>
+
+        {expanded && (
+          <div className="ml-2 mt-1 space-y-2 border-l border-slate-800 pl-4 text-xs">
+            <div>
+              <p className="mb-1 text-slate-500">Input</p>
+              <pre className="max-h-28 overflow-auto rounded-md bg-slate-950 p-2 text-slate-300">
+                {JSON.stringify(nodeExecution.input || {}, null, 2)}
+              </pre>
+            </div>
+            <div>
+              <p className="mb-1 text-slate-500">Output</p>
+              <pre className="max-h-28 overflow-auto rounded-md bg-slate-950 p-2 text-slate-300">
+                {JSON.stringify(nodeExecution.output || {}, null, 2)}
+              </pre>
+            </div>
+            {nodeExecution.error && (
+              <p className="rounded-md border border-red-900 bg-red-950/30 p-2 text-red-300">
+                {nodeExecution.error}
+              </p>
+            )}
+            {nodeExecution.retryCount > 0 && (
+              <p className="text-slate-500">Retries: {nodeExecution.retryCount}</p>
+            )}
+          </div>
+        )}
+      </div>
     </div>
   );
 }
