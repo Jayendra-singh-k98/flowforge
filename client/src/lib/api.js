@@ -71,12 +71,10 @@ export const executeWorkflow = (workflowId) =>
     method: "POST",
   });
 
-export const getWorkflowExecutions = (workflowId) => {
+export const getWorkflowExecutions = (workflowId) =>
   apiRequest(`/workflows/${workflowId}/executions`);
-}
- 
-export const getWorkflowExecution = (executionId) => {
+
+export const getWorkflowExecution = (executionId) =>
   apiRequest(`/workflow-executions/${executionId}`);
-};
 
 

@@ -35,6 +35,7 @@ export default function ExecutionsPage() {
       }
 
       const response = await getWorkflowExecutions(workflowId);
+      console.log("Execution history response:", response);
       const loaded = response?.data?.executions || [];
       setExecutions(loaded);
 

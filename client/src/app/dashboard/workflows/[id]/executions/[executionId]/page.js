@@ -38,6 +38,9 @@ export default function ExecutionDetailsPage() {
         }
 
         const response = await getWorkflowExecution(executionId);
+
+        console.log("Execution details response:", response);
+        
         const loaded = response?.data?.execution || null;
         if (cancelled) return;
 
