@@ -2,9 +2,10 @@ const executeTrigger = async (node, input) => {
     return { triggered: true, input, };
 };
 
+const { assertSafeUrl } = require("../utils/ssrfGuard");
+
 const executeHttp = async (node, input) => {
     const config = node.config || {};
-
     const method = (config.method || "GET").toUpperCase();
     const url = config.url;
 
@@ -12,33 +13,19 @@ const executeHttp = async (node, input) => {
         throw new Error("HTTP node URL is required");
     }
 
-    // Validate URL
-    let parsedUrl;
-
-    try {
-        parsedUrl = new URL(url);
-    } catch (error) {
-        throw new Error("Invalid HTTP node URL");
-    }
-
-    if (!["http:", "https:"].includes(parsedUrl.protocol)) {
-        throw new Error("Only HTTP and HTTPS URLs are supported");
-    }
+    // SSRF protection: validate scheme, hostname, and resolved IPs
+    // are not private/internal before making the request.
+    await assertSafeUrl(url);
 
     const controller = new AbortController();
-
-    const timeout = setTimeout(() => {
-        controller.abort();
-    }, 10000);
+    const timeout = setTimeout(() => controller.abort(), 10000);
 
     try {
-
         let body;
         const headers = { ...(config.headers || {}) };
 
         if (!["GET", "HEAD"].includes(method) && config.body) {
             body = config.body;
-
             if (!headers["Content-Type"]) {
                 headers["Content-Type"] = "application/json";
             }
@@ -46,15 +33,39 @@ const executeHttp = async (node, input) => {
 
         console.log(`HTTP ${method} ${url}`);
 
-        const response = await fetch(url, {
-            method,
-            headers,
-            body,
-            signal: controller.signal,
-        });
+        // redirect: "manual" so we control and re-validate every hop —
+        // otherwise a validated public URL could 302 to an internal one
+        // and silently bypass the SSRF check above.
+        let currentUrl = url;
+        let response;
+        const MAX_REDIRECTS = 5;
+
+        for (let i = 0; i <= MAX_REDIRECTS; i++) {
+            response = await fetch(currentUrl, {
+                method,
+                headers,
+                body,
+                signal: controller.signal,
+                redirect: "manual",
+            });
+
+            if ([301, 302, 303, 307, 308].includes(response.status)) {
+                const location = response.headers.get("location");
+                if (!location) {
+                    throw new Error("Redirect response missing Location header");
+                }
+                currentUrl = new URL(location, currentUrl).toString();
+                await assertSafeUrl(currentUrl); // re-validate the new target
+                if (i === MAX_REDIRECTS) {
+                    throw new Error("Too many redirects");
+                }
+                continue;
+            }
+
+            break;
+        }
 
         const contentType = response.headers.get("content-type") || "";
-
         let responseData;
 
         if (contentType.includes("application/json")) {
@@ -67,15 +78,11 @@ const executeHttp = async (node, input) => {
             throw new Error(`HTTP request failed with status ${response.status}`);
         }
 
-        return {
-            status: response.status,
-            data: responseData,
-        };
+        return { status: response.status, data: responseData };
     } catch (error) {
         if (error.name === "AbortError") {
             throw new Error("HTTP request timed out");
         }
-
         throw error;
     } finally {
         clearTimeout(timeout);

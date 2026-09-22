@@ -6,6 +6,7 @@ const app = express();
 const authRoutes = require("./routes/authRoutes");
 const workflowRoutes = require("./routes/workflowRoutes");
 const workflowExecutionRoutes = require("./routes/workflowExecutionRoutes");
+const { errorHandler, notFoundHandler } = require("./middleware/errorHandler");
 
 app.use(helmet());
 
@@ -28,5 +29,8 @@ app.get("/api/health", (req, res) => {
 app.use("/api/auth", authRoutes);
 app.use("/api/workflows", workflowRoutes);
 app.use("/api", workflowExecutionRoutes);
+app.use(notFoundHandler);
+app.use(errorHandler);
+
 
 module.exports = app;
