@@ -21,7 +21,7 @@ export default function DashboardPage() {
 
 
                 {/* Main Dashboard Card */}
-                <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+                <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-2">
 
                     <Link
                         href="/dashboard/workflows"
@@ -45,7 +45,7 @@ export default function DashboardPage() {
                     </Link>
 
 
-                    <div className="rounded-xl border border-slate-800 bg-slate-900 p-6 opacity-70">
+                    {/* <div className="rounded-xl border border-slate-800 bg-slate-900 p-6 opacity-70">
 
                         <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-lg bg-purple-500/10 text-2xl">
                             📊
@@ -63,28 +63,7 @@ export default function DashboardPage() {
                             Coming soon
                         </p>
 
-                    </div>
-
-
-                    <div className="rounded-xl border border-slate-800 bg-slate-900 p-6 opacity-70">
-
-                        <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-lg bg-green-500/10 text-2xl">
-                            ⚙️
-                        </div>
-
-                        <h3 className="text-lg font-semibold">
-                            Settings
-                        </h3>
-
-                        <p className="mt-2 text-sm text-slate-400">
-                            Configure your FlowForge account and preferences.
-                        </p>
-
-                        <p className="mt-5 text-sm text-slate-500">
-                            Coming soon
-                        </p>
-
-                    </div>
+                    </div> */}
 
                 </div>
 
