@@ -3,14 +3,13 @@ require("dotenv").config();
 const app = require("./app");
 const connectDB = require("./config/db");
 const redis = require("./config/redis");
-require("./workers/workflowWorker");
 const PORT = process.env.PORT || 5000;
 
 const startServer = async () => {
     try {
         await connectDB();
         await redis.ping();
-
+        require("./workers/workflowWorker");
         app.listen(PORT, () => {
             console.log(`Server is running on port ${PORT}`);
         });

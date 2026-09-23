@@ -1,4 +1,4 @@
-export const validateWorkflow = ( nodes, edges ) => {
+export const validateWorkflow = (nodes, edges) => {
   const errors = [];
 
   if (!nodes || nodes.length === 0) {
@@ -52,7 +52,8 @@ export const validateWorkflow = ( nodes, edges ) => {
         errors.push(`Condition "${node.data?.label}" requires a field.`);
       }
 
-      if (!config.value?.trim()) {
+      const hasValue = config.value !== undefined && config.value !== null && String(config.value).trim() !== "";
+      if (!hasValue) {
         errors.push(`Condition "${node.data?.label}" requires a value.`);
       }
     }

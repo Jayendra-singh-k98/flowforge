@@ -29,6 +29,11 @@ const normalizeError = (err) => {
     return new AppError("Token expired", 401);
   }
 
+  // Express body-parser: payload exceeded the configured limit
+  if (err.type === "entity.too.large") {
+    return new AppError("Request payload is too large", 413);
+  } 
+
   // Unknown/unexpected — never leak details
   return new AppError("Internal server error", 500);
 };

@@ -40,16 +40,14 @@ const triggerConfigSchema = z.object({
 // resilient if a node's config is briefly incomplete mid-edit.
 const nodeSchema = z.object({
   id: z.string().min(1),
-  type: z.enum(["trigger", "http", "email", "condition"]),
+  type: z.enum(["trigger", "action", "condition"]), // matches Workflow.js model, not frontend React Flow types
   name: z.string().trim().min(1).optional(),
   position: positionSchema.optional(),
-  data: z.object({
-    label: z.string().optional(),
-    config: z.record(z.string(), z.any()).optional(),
-  }).optional(),
   config: z.record(z.string(), z.any()).optional(),
 }).superRefine((node, ctx) => {
-  const config = node.config ?? node.data?.config ?? {};
+  const config = node.config ?? {};
+  // For "action" nodes, the specific kind (http/email) lives in config.nodeType.
+  // Trigger and condition nodes use node.type directly.
   const nodeType = config.nodeType || node.type;
 
   const schemaByType = {

@@ -39,8 +39,6 @@ const executeWorkflow = async (workflow, execution) => {
         const nextNodes = [];
 
         for (const node of currentNodes) {
-            console.log(`Executing node: ${node.id}`);
-
             const nodeExecution = execution.nodeExecutions.find(
                 (item) => item.nodeId === node.id
             );
@@ -50,6 +48,21 @@ const executeWorkflow = async (workflow, execution) => {
                     `Execution record not found for node ${node.id}`
                 );
             }
+
+            // Retry safety: if this node already completed on a previous
+            // attempt, don't re-run it (avoids re-sending emails / re-firing
+            // HTTP requests on retry). Just propagate its stored output
+            // forward so downstream nodes still get the right input.
+            if (nodeExecution.status === "completed") {
+                console.log(`Skipping already-completed node: ${node.id}`);
+
+                const children = getNextNodes(workflow, node, nodeExecution.output);
+                nextNodes.push(...children);
+                input = nodeExecution.output;
+                continue;
+            }
+
+            console.log(`Executing node: ${node.id}`);
 
             nodeExecution.status = "running";
             nodeExecution.startedAt = new Date();

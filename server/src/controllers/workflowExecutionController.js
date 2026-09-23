@@ -94,7 +94,6 @@ const getWorkflowExecutions = async (req, res) => {
     try {
         const workflowId = req.params.id;
 
-        // Make sure the workflow belongs to the logged-in user
         const workflow = await Workflow.findOne({
             _id: workflowId,
             userId: req.user._id,
@@ -104,15 +103,43 @@ const getWorkflowExecutions = async (req, res) => {
             return res.status(404).json({ success: false, message: "Workflow not found" });
         }
 
-        const executions = await WorkflowExecution.find({
-            workflowId: workflow._id,
-            userId: req.user._id,
-        }).sort({ createdAt: -1 }).lean();
+        // Pagination: optional query params, safe defaults so existing
+        // frontend calls (no query params) keep working exactly as before —
+        // just capped at 50 most-recent executions instead of unbounded.
+        const page = Math.max(1, parseInt(req.query.page, 10) || 1);
+        const limit = Math.min(100, Math.max(1, parseInt(req.query.limit, 10) || 50));
+        const skip = (page - 1) * limit;
 
-        return res.status(200).json({ success: true, data: { executions, },});
+        const [executions, total] = await Promise.all([
+            WorkflowExecution.find({
+                workflowId: workflow._id,
+                userId: req.user._id,
+            })
+                .sort({ createdAt: -1 })
+                .skip(skip)
+                .limit(limit)
+                .lean(),
+            WorkflowExecution.countDocuments({
+                workflowId: workflow._id,
+                userId: req.user._id,
+            }),
+        ]);
+
+        return res.status(200).json({
+            success: true,
+            data: {
+                executions,
+                pagination: {
+                    page,
+                    limit,
+                    total,
+                    totalPages: Math.ceil(total / limit),
+                },
+            },
+        });
 
     } catch (error) {
-        console.error( "Get workflow executions error:", error);
+        console.error("Get workflow executions error:", error);
 
         if (error.name === "CastError") {
             return res.status(400).json({
