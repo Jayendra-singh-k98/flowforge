@@ -2,11 +2,14 @@ const express = require("express");
 
 const { register, login, googleLogin, googleCallback } = require("../controllers/authController");
 const protect = require("../middleware/authMiddleware");
+const validate = require("../middleware/validate");
+const { registerSchema, loginSchema } = require("../validators/authValidators");
+
 
 const router = express.Router();
 
-router.post("/register", register);
-router.post("/login", login);
+router.post("/register", validate(registerSchema), register);
+router.post("/login", validate(loginSchema), login);
 router.get("/google", googleLogin);
 router.get("/google/callback", googleCallback);
 
