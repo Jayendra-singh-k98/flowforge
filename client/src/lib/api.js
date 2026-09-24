@@ -1,28 +1,56 @@
-const API_URL =
-  process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api";
+const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api";
+
+class ApiError extends Error {
+  constructor(message, status, errors = null) {
+    super(message);
+    this.status = status;
+    this.errors = errors; // array of validation messages, when present
+  }
+}
 
 const apiRequest = async (endpoint, options = {}) => {
   const token = typeof window !== "undefined" ? localStorage.getItem("flowforge_token") : null;
 
-  const response = await fetch(`${API_URL}${endpoint}`, {
-    ...options,
-    headers: {
-      "Content-Type": "application/json", 
-      ...(token ? { Authorization: `Bearer ${token}`, } : {}), 
-      ...(options.headers || {}),
-    },
-  });
+  let response;
+  try {
+    response = await fetch(`${API_URL}${endpoint}`, {
+      ...options,
+      headers: {
+        "Content-Type": "application/json",
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        ...(options.headers || {}),
+      },
+    });
+  } catch (networkError) {
+    // fetch itself threw — server unreachable, not an HTTP error response
+    throw new ApiError("Cannot reach the server. Please check your connection and try again.", 0);
+  }
 
-  const data = await response.json();
+  const data = await response.json().catch(() => ({}));
 
   if (!response.ok) {
-    throw new Error(
-      data.message || "Something went wrong"
+    // Session expired or invalid — clear it and send the user back to login,
+    // rather than leaving them stuck on a page that will now fail every call.
+    if (response.status === 401 && typeof window !== "undefined") {
+      localStorage.removeItem("flowforge_token");
+      if (!window.location.pathname.startsWith("/login")) {
+        window.location.href = "/login?error=session_expired";
+      }
+    }
+
+    throw new ApiError(
+      data.message || "Something went wrong",
+      response.status,
+      data.errors || null
     );
   }
 
   return data;
 };
+
+export { ApiError };
+
+// ... rest of the file (createWorkflow, getWorkflows, etc.) unchanged
 
 export const createWorkflow = (workflow) =>
   apiRequest("/workflows", {

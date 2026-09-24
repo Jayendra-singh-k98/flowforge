@@ -186,7 +186,7 @@ export default function WorkflowPage() {
       }
     } catch (error) {
       console.error("Save workflow error:", error);
-      toast.error(error.message || "Something went wrong while saving.");
+      toast.error(error.errors || error.message || "Something went wrong while saving.");
     } finally {
       setSaving(false);
     }

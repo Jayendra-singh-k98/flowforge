@@ -210,7 +210,7 @@ const googleCallback = async (req, res) => {
     );
 
   } catch (error) {
-    console.error("Google OAuth error:", error);
+    console.error("Google OAuth error:", error.message);
     return res.redirect(`${process.env.FRONTEND_URL}/login?error=google_auth_failed`);
   }
 };

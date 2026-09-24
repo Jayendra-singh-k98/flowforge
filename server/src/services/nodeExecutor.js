@@ -188,6 +188,7 @@ const emailTransporter = nodemailer.createTransport({
         pass: process.env.SMTP_PASS,
     },
 });
+const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 const executeEmail = async (node, input) => {
     const config = node.config || {};
@@ -198,6 +199,10 @@ const executeEmail = async (node, input) => {
 
     if (!to) {
         throw new Error("Email recipient is required");
+    }
+
+    if (!EMAIL_REGEX.test(to)) {
+        throw new Error("Email recipient is not a valid email address");
     }
 
     if (!subject) {
@@ -215,14 +220,24 @@ const executeEmail = async (node, input) => {
         text: body,
     };
 
-    const info = await emailTransporter.sendMail(mailOptions);
+    try {
+        const info = await emailTransporter.sendMail(mailOptions);
 
-    return {
-        messageId: info.messageId,
-        accepted: info.accepted,
-        rejected: info.rejected,
-    };
+        return {
+            messageId: info.messageId,
+            accepted: info.accepted,
+            rejected: info.rejected,
+        };
+    } catch (error) {
+        // Log full detail server-side only — never let raw SMTP error
+        // responses (which can include connection/protocol detail)
+        // reach the execution record shown in the UI.
+        console.error("Email send failed:", error.message);
+
+        throw new Error("Failed to send email. Please check the recipient address and try again.");
+    }
 };
+
 const executeNode = async (node, input = {}) => {
 
     const nodeType = node.config?.nodeType || node.type;
