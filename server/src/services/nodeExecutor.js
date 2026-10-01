@@ -215,7 +215,7 @@ const executeEmail = async (node, input) => {
 
     const mailOptions = {
         from: process.env.SMTP_FROM || process.env.SMTP_USER,
-        to,
+        to, 
         subject,
         text: body,
     };
@@ -229,10 +229,6 @@ const executeEmail = async (node, input) => {
             rejected: info.rejected,
         };
     } catch (error) {
-        // Log full detail server-side only — never let raw SMTP error
-        // responses (which can include connection/protocol detail)
-        // reach the execution record shown in the UI.
-        console.error("Email send failed:", error.message);
 
         throw new Error("Failed to send email. Please check the recipient address and try again.");
     }
