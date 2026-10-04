@@ -9,7 +9,6 @@ const startServer = async () => {
     try {
         await connectDB();
         await redis.ping();
-        require("./workers/workflowWorker");
         app.listen(PORT, () => {
             console.log(`Server is running on port ${PORT}`);
         });
